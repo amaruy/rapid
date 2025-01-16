@@ -1,4 +1,4 @@
-# RAPID: Robust APT Detection and Investigation Using Context-Aware Deep Learning
+# RAPID
 
 A framework for detecting and investigating Advanced Persistent Threats (APTs) using context-aware deep learning. RAPID analyzes system-level events to detect and trace malicious activities.
 
