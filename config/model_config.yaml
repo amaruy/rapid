@@ -1,0 +1,36 @@
+model:
+  name: bilstm
+  embedding_dims:
+    event: 3
+    objectData: 32
+    objectType: 2
+    subject: 32
+  architecture:
+    hidden_size: 128
+    num_layers: 2
+    fc1_size: 128
+
+training:
+  batch_size: 2048
+  max_epochs: 30
+  lr: 0.0005
+  shuffle: false
+  window_size: 10
+  ntp: 1  # number of time points
+  
+  # Early stopping
+  early_stopping:
+    threshold: 0.00001
+    patience: 5
+    
+  # Learning rate scheduler
+  scheduler:
+    factor: 0.5
+    min_lr: 1.0e-06
+    patience: 10
+    threshold: 0.001
+
+data:
+  min_proc_size: 450
+  target: 1
+  target_variable: event 

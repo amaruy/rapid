@@ -1,0 +1,19 @@
+inherit_from: "config.yaml"
+
+embedding:
+  vector_size: 100
+  window: 5
+  min_count: 1
+  workers: 4
+  sg: 1
+  epochs: 10
+  reduced_dim: 32
+
+encoder:
+  min_count: 5
+  pad_value: 0
+  missing_value: 0
+
+paths:
+  word2vec_filename: "word2vec.model"
+  embedder_filename: "embedder.pt" 

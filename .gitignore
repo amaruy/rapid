@@ -1,0 +1,14 @@
+__pycache__/
+paper.md
+data/
+artifacts/
+*.pkl
+*.pt
+*.model
+*.joblib
+*.joblib.dill
+*.joblib.pkl
+*.joblib.pkl.dill
+logs/
+old/
+TODO

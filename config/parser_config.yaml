@@ -1,0 +1,17 @@
+paths:
+  data_dir: "data"
+  artifacts_dir: "artifacts"
+  logs_dir: "artifacts/logs"
+
+parsing:
+  batch_size: 5000000
+  default_timesplit: "2018-04-06 11:00:00"
+  
+  # Known broken process names that need patching
+  broken_processes: 
+    - nginx
+    - vUgefal
+    - pEja72mA
+    - test
+    - XIM
+    - eWq10bVcx 

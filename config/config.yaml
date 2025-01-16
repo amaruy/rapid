@@ -1,0 +1,9 @@
+paths:
+  data_dir: "data/cadets"
+  artifacts_dir: "artifacts"
+  logs_dir: "artifacts/logs"
+  model_dir: "artifacts/models"
+  encoders_dir: "artifacts/encoders"
+  word2vec_filename: "word2vec.model"
+  embedder_filename: "embedder.pt"
+

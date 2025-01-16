@@ -1,0 +1,69 @@
+anomaly_detection:
+  batch_size: 2048
+  window_size: 10
+  ntp: 1  # number of time points
+  threshold: 0.99  # anomaly detection threshold
+  device: "cuda"  # or "cpu"
+
+  # Model paths
+  model_state_path: "artifacts/models/detector/detector.pt"
+  embedder_path: "artifacts/models/embeddings/embedder.pt"
+  encoders_path: "artifacts/encoders/encoders.pkl"
+  
+  # Output paths
+  output_dir: "artifacts/anomalies"
+  scores_filename: "anomaly_scores.pkl"
+
+  # Data filtering
+  exclude_events: ["read"]  # events to exclude from analysis
+
+graph_analysis:
+  # Data source
+  source: "cadets"  # Source identifier for the data
+  
+  # Alert tracing parameters
+  alert_threshold: 0.3  # Minimum score for an alert to be considered
+  event_threshold: 0.0  # Minimum score for events to be included in graph
+  top_n_alerts: 500  # Number of top alerts to analyze
+  
+  # Graph filtering
+  max_graph_size: 100  # Maximum number of edges in a graph for visualization
+  min_graph_score: 0.1  # Minimum graph score for saving visualization
+  
+  # Graph construction
+  exclude_system_paths: [  # System paths to exclude from graph
+    "/usr/lib/",
+    "/usr/share/",
+    "/usr/bin/",
+    "/usr/local/",
+    "/var/lib/",
+    "/var/log/",
+    "/etc/",
+    "/bin/",
+    "/sbin/"
+  ]
+  exclude_extensions: [".ini", ".log", ".conf"]  # File extensions to exclude
+  exclude_processes: ["update-notifier", "snapd", "systemd"]  # Process names to exclude
+  
+  # Output paths
+  graph_dir: "artifacts/graph"  # Base directory for graph artifacts
+  analyzer_filename: "analyzer.pkl"  # Graph analyzer pickle file
+  
+  alerts_dir: "artifacts/alerts"  # Base directory for alert artifacts
+  alert_graphs_dir: "graphs"  # Directory for alert visualizations
+  alert_details_dir: "details"  # Directory for alert details
+
+evaluation:
+  # Ground truth paths
+  malicious_objects_file: "malicious_objects.txt"  # Relative to data_dir
+  malicious_subjects_file: "malicious_subjects.txt"  # Relative to data_dir
+  
+  # Edge filtering
+  exclude_events: [] # Events to exclude from edge evaluation
+  
+  # Output paths
+  output_dir: "artifacts/evaluation"  # Base directory for evaluation results
+  metrics_file: "metrics.txt"  # Overall metrics file
+  true_positives_file: "true_positives.txt"  # True positive edges
+  false_negatives_file: "false_negatives.txt"  # False negative edges
+  false_positives_file: "false_positives.txt"  # False positive edges 
