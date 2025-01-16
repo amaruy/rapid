@@ -1,11 +1,9 @@
-.PHONY: all download_data parse_data train_embedder train_detector inference evaluate clean setup
-
-all: parse_data train_embedder train_detector inference evaluate
+.PHONY: all download_data parse_data train inference evaluate clean setup
 
 download_data:
 	@echo "Downloading CADETS dataset..."
 	@mkdir -p data/cadets/raw_data
-	@cd data/cadets && \
+	@cd data/cadets/raw_data && \
 		curl "https://drive.google.com/uc?id=1AcWrYiBmgAqp7DizclKJYYJJBQbnDMfb" -o cadets_json_1.tar.gz && \
 		curl "https://drive.google.com/uc?id=1XLCEhf5DR8xw3S-Fimcj32IKnfzHFPJW" -o cadets_json_2.tar.gz && \
 		curl "https://drive.google.com/uc?id=1EycO23tEvZVnN3VxOHZ7gdbSCwqEZTI1" -o cadets_json_3.tar.gz && \
@@ -18,21 +16,16 @@ parse_data:
 	@echo "Parsing CADETS data..."
 	python -m src.parsers.cadets_parser cadets
 
-train_embedder: parse_data
-	@echo "Training graph embedder..."
-	python -m src.models.train_embedder
-
-train_detector: train_embedder
-	@echo "Training anomaly detector..."
-	python -m src.models.train_detector
+train: 
+	@echo "Training models..."
+	python -m src.training.train_embeddings
+	python -m src.training.train_detector
 
 inference:
 	@echo "Running inference..."
 	python -m src.inference.detect_anomalies
 	python -m src.inference.trace_alerts
-	python -m src.inference.evaluate_alerts
 
-evaluate: inference
+evaluate:
 	@echo "Evaluating results..."
 	python -m src.evaluation.evaluate
-
