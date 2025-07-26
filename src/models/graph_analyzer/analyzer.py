@@ -319,4 +319,35 @@ class GraphAnalyzer:
 
     def save(self, graph: nx.DiGraph, filename: Union[str, Path]) -> None:
         """Save the graph visualization to a file."""
-        save_graph(graph, filename) 
+        save_graph(graph, filename)
+
+    def merge_alerts(
+        self, alerts: List[Tuple[str, nx.DiGraph, float]]
+    ) -> List[Tuple[str, nx.DiGraph, float]]:
+        """Merge alerts whose graphs share nodes.
+
+        Args:
+            alerts: List of ``(trigger_uuid, alert_graph, score)`` tuples.
+
+        Returns:
+            List of merged alert tuples.
+        """
+
+        merged: List[Tuple[str, nx.DiGraph, float]] = []
+
+        for uuid, graph, _ in alerts:
+            merge_idx: Optional[int] = None
+            for idx, (_, m_graph, _) in enumerate(merged):
+                if set(graph.nodes()).intersection(m_graph.nodes()):
+                    merge_idx = idx
+                    break
+
+            if merge_idx is not None:
+                m_uuid, m_graph, _ = merged[merge_idx]
+                combined = nx.compose(m_graph, graph)
+                merged_score = self.get_score(graph=combined)
+                merged[merge_idx] = (m_uuid, combined, merged_score)
+            else:
+                merged.append((uuid, graph, self.get_score(graph=graph)))
+
+        return merged
