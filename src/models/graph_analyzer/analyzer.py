@@ -3,6 +3,11 @@ import pandas as pd
 import numpy as np
 from pathlib import Path
 from typing import Optional, Set, List, Dict, Union, Tuple
+from sklearn.cluster import DBSCAN
+from sklearn.manifold import TSNE
+from sklearn.neighbors import NearestNeighbors
+from gensim.models import Word2Vec
+
 from .utils import find_ttps, filter_files, filter_processes
 from .visualizer import plot_graph, save_graph
 from src.utils.logging_utils import setup_logger
@@ -25,8 +30,10 @@ class GraphAnalyzer:
         if df is not None:
             self.logger.info(f'Preprocessing data... {len(df)} logs.')
             self.df = self.preprocess(df)
+            self.logger.info('Clustering objects')
+            clusters = self.cluster_objects(self.df['objectData'])
+            self.df['cluster'] = self.df['objectData'].map(clusters).fillna(0)
             self.logger.info(f'Creating graph from {len(self.df)} logs...')
-            self.df['cluster'] = 0
             self.graph = self.create_graph(self.df)
             self.logger.info(f'Graph created. {self.graph.number_of_nodes()} nodes and {self.graph.number_of_edges()} edges.')
             self.df_dict = self.df.set_index('uuid')[['processUUID', 'objectUUID', 'objectData', 'event',
@@ -75,8 +82,67 @@ class GraphAnalyzer:
         
         df['imp_object'] = df['imp_file'] | df['imp_object'] | df['external']
         df['imp_process'] = df['processUUID'].isin(imp_processes)
-        
+
         return df[df['imp_process'] & df['imp_object']].copy()
+
+    def cluster_objects(self, objects: List[str], min_samples: int = 3) -> Dict[str, int]:
+        """Cluster object strings using DBSCAN on their embeddings.
+
+        Args:
+            objects: List of object identifiers to cluster
+            min_samples: Minimum samples parameter for DBSCAN
+
+        Returns:
+            Mapping of object identifier to cluster label
+        """
+
+        try:
+            model_path = f"checkpoints/{self.source}/word2vec.model"
+            w2v_model = Word2Vec.load(model_path)
+        except Exception as e:
+            self.logger.warning(f"Failed loading embeddings from {model_path}: {e}")
+            return {}
+
+        unique_obj_data = np.unique(objects)
+        embeddings: List[np.ndarray] = []
+        obj_names: List[str] = []
+
+        for obj in unique_obj_data:
+            if obj in w2v_model.wv:
+                embeddings.append(w2v_model.wv[obj])
+                obj_names.append(obj)
+
+        if not embeddings:
+            return {}
+
+        embeddings_array = np.array(embeddings)
+
+        tsne = TSNE(n_components=2, random_state=0)
+        embeddings_2d = tsne.fit_transform(embeddings_array)
+
+        eps = self._estimate_eps(embeddings_2d, min_samples)
+
+        dbscan = DBSCAN(eps=eps, min_samples=min_samples).fit(embeddings_2d)
+        labels = dbscan.labels_
+
+        return dict(zip(obj_names, labels))
+
+    def _estimate_eps(self, points: np.ndarray, min_samples: int) -> float:
+        """Estimate DBSCAN epsilon using the elbow method.
+
+        Args:
+            points: 2D array of points
+            min_samples: Number of neighbors to consider
+
+        Returns:
+            Estimated epsilon value
+        """
+        nn = NearestNeighbors(n_neighbors=min_samples).fit(points)
+        distances, _ = nn.kneighbors(points)
+        k_distances = np.sort(distances[:, min_samples - 1])
+        differences = np.diff(k_distances)
+        elbow_index = np.argmax(differences)
+        return float(k_distances[elbow_index])
 
     @staticmethod
     def add_node(G: nx.DiGraph, identifier: str, timestamp: int, node_type: str) -> None:
