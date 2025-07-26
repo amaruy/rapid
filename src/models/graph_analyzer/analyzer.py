@@ -325,12 +325,6 @@ class GraphAnalyzer:
         self, alerts: List[Tuple[str, nx.DiGraph, float]]
     ) -> List[Tuple[str, nx.DiGraph, float]]:
         """Merge alerts whose graphs share nodes.
-
-        Args:
-            alerts: List of ``(trigger_uuid, alert_graph, score)`` tuples.
-
-        Returns:
-            List of merged alert tuples.
         """
 
         merged: List[Tuple[str, nx.DiGraph, float]] = []
