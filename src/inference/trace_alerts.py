@@ -117,7 +117,9 @@ def trace_alerts(
                 logger.warning(f"Failed to process event {event['uuid']}: {e}")
                 continue
                 
-        logger.info(f"Found {len(alerts)} significant alerts")
+        logger.info(f"Found {len(alerts)} significant alerts before merging")
+        alerts = analyzer.merge_alerts(alerts)
+        logger.info(f"Returning {len(alerts)} merged alerts")
         return alerts
         
     except Exception as e:
